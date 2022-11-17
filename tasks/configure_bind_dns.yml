@@ -8,12 +8,35 @@
   - import_tasks: ../handlers/main.yml
 
   tasks:
+  - name: Install DNS server packages
+    dnf:
+      name: 
+        - bind 
+        - bind-utils
+      state: latest
+  - name: Enable DNS server daemon
+    service:
+      name: named
+      enabled: true
+      state: stopped
+  - name: Install DNS SerialNumber generator script
+    copy:
+      dest: /usr/local/bin/set-dns-serial.sh
+      src: ../files/set-dns-serial.sh
+      mode: 0755
+  - name: Enable firewall for DNS server
+    firewalld:
+      immediate: true
+      permanent: true
+      service: dns
+      state: enabled
   - name: Setup named configuration files
     block:
     - name: Write out named file
       template:
         src: ../templates/named.conf.j2
         dest: /etc/named.conf
+        backup: true
       notify:
         - restart bind
     - name: Set zone serial number
@@ -29,6 +52,7 @@
         src: ../templates/zonefile.j2
         dest: /var/named/zonefile.db
         mode: '0644'
+        backup: true
       notify:
         - restart bind
 
@@ -37,5 +61,10 @@
         src: ../templates/reverse.j2
         dest: /var/named/reverse.db
         mode: '0644'
+        backup: true
       notify:
         - restart bind
+
+  - name: Modify local system DNS server
+    shell: nmcli connection modify enp1s0  ipv4.dns "192.168.100.254" ; nmcli connection reload ; nmcli connection up enp1s0
+

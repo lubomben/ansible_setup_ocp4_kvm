@@ -8,10 +8,26 @@
   - import_tasks: ../handlers/main.yml
 
   tasks:
+  - name: Install DHCP server package
+    dnf:
+      name: dhcp-server
+      state: latest
+  - name: Enable DHCP server daemon
+    service:
+      name: dhcpd
+      enabled: true
+      state: stopped
+  - name: Enable firewall for DHCP server
+    firewalld:
+      immediate: true
+      permanent: true
+      service: dhcp
+      state: enabled
   - name: Write out dhcp file
     template:
       src: ../templates/dhcpd.conf.j2
       dest: /etc/dhcp/dhcpd.conf
+      backup: true
     notify:
       - restart dhcpd
     when: not uefi
@@ -19,6 +35,7 @@
     template:
       src: ../templates/dhcpd-uefi.conf.j2
       dest: /etc/dhcp/dhcpd.conf
+      backup: true
     notify:
       - restart dhcpd
     when: uefi

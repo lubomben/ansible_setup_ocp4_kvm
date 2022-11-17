@@ -7,9 +7,37 @@
   - import_tasks: ../handlers/main.yml
 
   tasks:
+  - name: Install HAproxy server packages
+    dnf:
+      name: haproxy
+      state: latest
+  - name: Set SEBool to allow haproxy connect any port
+    seboolean:
+      name: haproxy_connect_any
+      persistent: yes
+      state: yes
   - name: Write out haproxy config file
     template:
       src: ../templates/haproxy.cfg.j2
       dest: /etc/haproxy/haproxy.cfg
+      backup: true
     notify:
       - restart haproxy
+  - name: Configure SElinux for HAproxy to use custom ports
+    seport:
+      ports:
+        - 6443
+        - 22623
+        - 32700
+      proto: tcp
+      setype: http_port_t
+  - name: Configure firewall for HAproxy custom ports
+    firewalld:
+      immediate: true
+      permanent: true
+      port: "{{ item }}"
+      state: enabled
+    with_items:
+      - 6443/tcp
+      - 22623/tcp
+      - 32700/tcp
