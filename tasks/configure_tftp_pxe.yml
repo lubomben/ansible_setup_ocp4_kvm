@@ -8,6 +8,72 @@
   - import_tasks: ../handlers/main.yml
 
   tasks:
+  - name: Instal TFTP server packages
+    dnf:
+      name:
+        - tftp-server
+        - syslinux
+      state: latest
+
+  - name: Enable firewall for TFTP server
+    firewalld:
+      immediate: true
+      permanent: true
+      service: tftp
+      state: enabled
+
+  - name: Create TFTP Systemd unit file
+    copy:
+      dest: /etc/systemd/system/helper-tftp.service
+      src: ../files/helper-tftp.service
+      group: root
+      owner: root
+      mode: 0755
+
+  - name: Create TFTP Systemd helper script
+    copy:
+      dest: /usr/local/bin/start-tftp.sh
+      src: ../files/start-tftp.sh
+      group: root
+      owner: root
+      mode: 0755
+
+  - name: Reload Systemd daemon
+    systemd:
+      daemon_reload: yes
+
+  - name: Start and enable TFTP service
+    service:
+      name: "{{ item }}"
+      enabled: true
+      state: started
+    with_items:
+      - tftp
+      - helper-tftp
+
+  - name: Populate the default files for tftpboot
+    copy:
+      dest: /var/lib/tftpboot/
+      src: /usr/share/syslinux/
+      remote_src: true
+      directory_mode: yes
+      force: true
+
+  - name: Create directory for hosting kernel and initramfs for PXE boot
+    file:
+      path: /var/lib/tftpboot/rhcos
+      state: directory
+
+  - name: Download RHCOS files
+    block:
+      - get_url:
+          dest: /var/lib/tftpboot/rhcos/kernel
+          url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/rhcos-installer-kernel-x86_64
+      - get_url:
+          dest: /var/lib/tftpboot/rhcos/initramfs.img
+          url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/rhcos-installer-initramfs.x86_64.img
+      - command: restorecon -RFv /var/lib/tftpboot/rhcos
+
   - name: Set the bootstrap specific tftp file
     template:
       src: ../templates/pxe-bootstrap.j2
