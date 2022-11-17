@@ -38,6 +38,7 @@ $ tree
 The `tasks` folder contain all the tasks to configure:
 - Bind DNS server
 - DHCP Server
+- HTTP Server
 - HAProxy Load balancer
 - PXE / TFTP Server
 
