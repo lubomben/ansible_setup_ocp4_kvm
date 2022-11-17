@@ -1,0 +1,52 @@
+---
+# Setup OCP4 HTTP Server on Helper Node
+
+- hosts: all
+  vars_files:
+    - ../vars/main.yml
+  handlers:
+  - import_tasks: ../handlers/main.yml
+
+  tasks:
+  - name: Install HTTP server package
+    dnf:
+      name: httpd
+      state: latest
+  - name: Enable HTTP server daemon
+    service:
+      name: httpd
+      enabled: true
+      state: stopped
+  - name: Enable firewall for HTTP server
+    firewalld:
+      immediate: true
+      permanent: true
+      service: "{{ item }}"
+      state: enabled
+    with_items:
+      - http
+      - https
+  - name: Reconfigure Listen port
+    replace:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: "^Listen 80"
+      replace: "Listen 8080"
+      backup: true
+    notify:
+      - restart httpd
+  - name: Enable firewall for HTTP 8080 port
+    firewalld:
+      immediate: true
+      permanent: true
+      port: 8080/tcp
+      state: enabled
+  - name: Create directory in the web server root directory for CoreOS rootfs image
+    file:
+      path: /var/www/html/rhcos
+      state: directory
+  - name: Download Red Hat CoreOS rootfs image
+    get_url:
+      dest: /var/www/html/rhcos/rootfs.img
+      url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/rhcos-live-rootfs.x86_64.img
+  - name: Restore SElinux context
+    command: restorecon -RFv /var/www/html/rhcos
