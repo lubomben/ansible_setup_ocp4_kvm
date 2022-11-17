@@ -54,3 +54,7 @@ vim vars/main.yml
 This tasks in this repository are not functional on their own. You need to follow our guide on [computingforgeeks.com](https://computingforgeeks.com) shared in the link below:
 
 [How To Deploy OpenShift Container Platform on KVM](https://computingforgeeks.com/how-to-deploy-openshift-container-platform-on-kvm/)
+
+### Using setup.sh
+
+You can perform the script setup.sh to launch all the playbooks in sequence.
