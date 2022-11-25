@@ -52,6 +52,11 @@
       - helper-tftp
 
   - name: Populate the default files for tftpboot
+    file:
+      path: /var/lib/tftpboot/pxelinux.cfg
+      state: directory
+
+  - name: Copy syslinux files needed for PXE boot
     copy:
       dest: /var/lib/tftpboot/
       src: /usr/share/syslinux/
