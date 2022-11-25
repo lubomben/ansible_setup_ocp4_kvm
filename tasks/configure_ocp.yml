@@ -1,0 +1,44 @@
+---
+# Configure OCP4 Artifacts
+#
+
+- hosts: all
+  become: false
+  vars_files:
+    - ../vars/main.yml
+  handlers:
+  - import_tasks: ../handlers/main.yml
+
+  tasks:
+  - name: Create path to store pull secret
+    file:
+      path: ~/.openshift
+      state: directory
+
+  - name: Copy pull secret
+    copy:
+      dest: ~/.openshift
+      src: ../files/pull-secret
+      force: true
+
+  - name: Create ocp4 directory
+    file:
+      path: ~/ocp4
+      state: directory
+
+  - name: Copy script to create install-config.yaml
+    copy:
+      dest: ~/
+      src: ../files/create_ocp_install-config.sh
+      mode: 0755
+      force: true
+
+  - name: Execute script to create base install-config.yaml
+    command: sh ~/create_ocp_install-config.sh
+
+  - name: Copy base install-config.yaml to ocp4 directory
+    copy:
+      dest: ~/ocp4/install-config.yaml
+      src: ~/install-config-base.yaml
+      remote_src: true
+      force: true
