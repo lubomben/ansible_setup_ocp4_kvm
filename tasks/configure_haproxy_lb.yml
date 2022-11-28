@@ -11,6 +11,11 @@
     dnf:
       name: haproxy
       state: latest
+  - name: Enable HAproxy server daemon
+    service:
+      name: haproxy
+      enabled: true
+      state: stopped
   - name: Set SEBool to allow haproxy connect any port
     seboolean:
       name: haproxy_connect_any
