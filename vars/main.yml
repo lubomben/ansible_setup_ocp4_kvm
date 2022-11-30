@@ -5,7 +5,7 @@ disk: vda
 helper:
   name: "bastion"
   ipaddr: "192.168.100.254"
-  networkifacename: "ens3"
+  networkifacename: "enp1s0"
 dns:
   domain: "example.com"
   clusterid: "ocp4"
