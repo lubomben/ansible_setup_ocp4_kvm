@@ -42,3 +42,10 @@
       src: ~/install-config-base.yaml
       remote_src: true
       force: true
+
+  - name: Copy OCP pre install script
+    copy:
+      dest: ~/
+      src: ../files/ocp_pre_install.sh
+      mode: 0755
+      force: true
