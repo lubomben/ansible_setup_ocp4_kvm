@@ -26,7 +26,7 @@
       path: ~/ocp4
       state: directory
 
-  - name: Copy script to create install-config.yaml
+  - name: Copy script to create base install-config.yaml
     copy:
       dest: ~/
       src: ../files/create_ocp_install-config.sh
